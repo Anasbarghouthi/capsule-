@@ -1,7 +1,7 @@
 r"""Train a YOLO model for capsule/endoscopy polyp detection.
 
-The script uses the final prepared dataset:
-    combined_cancer_detection_dataset/data.yaml
+The script uses the final prepared dataset with real negative images:
+    combined_cancer_detection_dataset_with_negatives/data.yaml
 
 Examples:
     C:\Users\TUF\AppData\Local\Programs\Python\Python313\python.exe train_yolo_model.py --check-only
@@ -25,7 +25,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--data",
         type=Path,
-        default=PROJECT_ROOT / "combined_cancer_detection_dataset" / "data.yaml",
+        default=PROJECT_ROOT / "combined_cancer_detection_dataset_with_negatives" / "data.yaml",
         help="YOLO data.yaml file.",
     )
     parser.add_argument(
