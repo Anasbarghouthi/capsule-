@@ -1,0 +1,15 @@
+{
+  "weights": "C:\\Users\\TUF\\Desktop\\Ai model for capsule endoscopy for detection cancer\\runs\\yolo_polyp\\polyp_with_real_negatives\\weights\\best.pt",
+  "data": "C:\\Users\\TUF\\Desktop\\Ai model for capsule endoscopy for detection cancer\\combined_cancer_detection_dataset_with_negatives\\data.yaml",
+  "split": "test",
+  "imgsz": 640,
+  "conf": 0.001,
+  "save_dir": "C:\\Users\\TUF\\Desktop\\Ai model for capsule endoscopy for detection cancer\\runs\\yolo_eval\\test_with_negatives",
+  "metrics": {
+    "precision_percent": 80.73,
+    "recall_percent": 79.8,
+    "map50_percent": 83.46,
+    "map50_95_percent": 72.04,
+    "map75_percent": 75.54
+  }
+}

@@ -1,4 +1,4 @@
-﻿const USE_MODEL_API = true;
+const USE_MODEL_API = true;
 const MODEL_API_ENDPOINT = "/predict";
 
 const state = {
@@ -30,6 +30,7 @@ const fileSize = document.getElementById("fileSize");
 const analysisStatus = document.getElementById("analysisStatus");
 const detectionList = document.getElementById("detectionList");
 const batchSummary = document.getElementById("batchSummary");
+const batchProgressBar = document.getElementById("batchProgressBar");
 const batchResults = document.getElementById("batchResults");
 const modelState = document.getElementById("modelState");
 
@@ -116,12 +117,13 @@ function loadFile(file) {
   state.batchResults = [];
   folderInput.value = "";
   batchSummary.textContent = "No folder selected";
+  batchProgressBar.style.width = "0%";
   batchResults.innerHTML = "";
   showFile(file, []);
 
   analysisStatus.textContent = "Ready";
-  setVerdict("neutral", "جاهز للتحليل", "--", 0);
-  detectionList.innerHTML = '<span class="muted">No detections yet</span>';
+  setVerdict("neutral", "Ready for analysis", "--", 0);
+  detectionList.innerHTML = '<span class="muted">No findings yet</span>';
   updateButtons();
 }
 
@@ -135,11 +137,12 @@ function loadFolder(files) {
   imageInput.value = "";
   batchResults.innerHTML = "";
   batchSummary.textContent = `${files.length} images selected`;
+  batchProgressBar.style.width = "0%";
   showFile(files[0], []);
 
   analysisStatus.textContent = "Folder ready";
-  setVerdict("neutral", "جاهز لتحليل المجلد", "--", 0);
-  detectionList.innerHTML = '<span class="muted">Click Analyze Folder to scan all images</span>';
+  setVerdict("neutral", "Ready for folder review", "--", 0);
+  detectionList.innerHTML = '<span class="muted">Run folder analysis to review all images</span>';
   updateButtons();
 }
 
@@ -177,13 +180,16 @@ async function analyzeFolder() {
   setBusy(true);
   state.batchResults = [];
   batchResults.innerHTML = "";
-  setVerdict("neutral", "جاري تحليل المجلد", "--", 0);
+  batchProgressBar.style.width = "0%";
+  setVerdict("neutral", "Scanning folder", "--", 0);
 
   let detectedImages = 0;
   for (let index = 0; index < state.folderFiles.length; index += 1) {
     const file = state.folderFiles[index];
-    analysisStatus.textContent = `Analyzing ${index + 1}/${state.folderFiles.length}`;
-    batchSummary.textContent = `Analyzing ${index + 1} of ${state.folderFiles.length}`;
+    const progress = Math.round((index / state.folderFiles.length) * 100);
+    analysisStatus.textContent = `Scanning ${index + 1}/${state.folderFiles.length}`;
+    batchSummary.textContent = `Scanning ${index + 1} of ${state.folderFiles.length}`;
+    batchProgressBar.style.width = `${progress}%`;
 
     try {
       const result = await analyzeFile(file);
@@ -200,8 +206,9 @@ async function analyzeFolder() {
     }
   }
 
-  batchSummary.textContent = `${detectedImages}/${state.folderFiles.length} images contain detections`;
-  analysisStatus.textContent = "Folder done";
+  batchProgressBar.style.width = "100%";
+  batchSummary.textContent = `${detectedImages}/${state.folderFiles.length} images contain findings`;
+  analysisStatus.textContent = "Folder review complete";
 
   const firstDetectedIndex = state.batchResults.findIndex(
     (item) => item.result && (item.result.detections || []).length > 0,
@@ -225,7 +232,7 @@ async function analyzeWithPrototype(file) {
 
   return {
     mode: "prototype",
-    verdict: hasFinding ? "اشتباه polyp / tumor" : "لا يوجد اشتباه واضح",
+    verdict: hasFinding ? "Polyp / tumor suspected" : "No clear suspected polyp",
     level: hasFinding ? "danger" : "clear",
     confidence,
     detections: hasFinding
@@ -274,7 +281,7 @@ function renderDetections(detections) {
   overlayLayer.dataset.detections = JSON.stringify(detections);
 
   if (!detections.length) {
-    detectionList.innerHTML = '<span class="muted">No detections</span>';
+    detectionList.innerHTML = '<span class="muted">No findings detected</span>';
     return;
   }
 
@@ -403,7 +410,7 @@ function batchStatusText(item) {
   if (!detections.length) {
     return "No polyp";
   }
-  return `${detections.length} detection${detections.length > 1 ? "s" : ""}`;
+  return `${detections.length} finding${detections.length > 1 ? "s" : ""}`;
 }
 
 function formatDetectionsSummary(detections) {
@@ -425,13 +432,14 @@ function toPercent(value) {
 }
 
 function renderError(error) {
-  setVerdict("warning", "تعذر التحليل", "--", 0);
+  setVerdict("warning", "Analysis failed", "--", 0);
   analysisStatus.textContent = "Error";
   detectionList.innerHTML = `<span class="muted">${escapeHtml(error.message)}</span>`;
 }
 
 function setBusy(isBusy) {
   state.busy = isBusy;
+  document.body.classList.toggle("is-busy", isBusy);
   updateButtons();
   analysisStatus.textContent = isBusy ? "Analyzing" : analysisStatus.textContent;
 }
@@ -463,6 +471,7 @@ function resetInterface() {
   state.previewUrl = null;
   state.imageLoaded = false;
   state.busy = false;
+  document.body.classList.remove("is-busy");
   imageInput.value = "";
   folderInput.value = "";
   previewImage.removeAttribute("src");
@@ -474,8 +483,9 @@ function resetInterface() {
   fileSize.textContent = "--";
   analysisStatus.textContent = "Ready";
   batchSummary.textContent = "No folder selected";
+  batchProgressBar.style.width = "0%";
   batchResults.innerHTML = "";
-  setVerdict("neutral", "بانتظار الصورة", "--", 0);
+  setVerdict("neutral", "Awaiting image", "--", 0);
   detectionList.innerHTML = '<span class="muted">No image selected</span>';
   updateButtons();
 }
